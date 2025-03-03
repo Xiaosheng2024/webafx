@@ -1,0 +1,345 @@
+classDiagram
+    class User {
+        -Long id
+        -String username
+        -String password
+        -String email
+        -String fullName
+        -String avatar
+        -Boolean enabled
+        -Date createTime
+        -Date updateTime
+        +login(username, password) User
+        +logout() void
+        +resetPassword(email) boolean
+        +updateProfile(profile) boolean
+    }
+
+    class Role {
+        -Long id
+        -String name
+        -String description
+        -Boolean enabled
+        -Date createTime
+        -Date updateTime
+        +getPermissions() List~Permission~
+    }
+
+    class Permission {
+        -Long id
+        -String code
+        -String name
+        -String description
+        -String resource
+        -String action
+        -Date createTime
+    }
+
+    class Media {
+        -Long id
+        -String name
+        -String originalFileName
+        -String fileType
+        -String mimeType
+        -Long size
+        -String url
+        -String thumbUrl
+        -Long uploaderId
+        -Date createTime
+        -String md5
+        +upload(file) Media
+        +delete() boolean
+        +getUrl() String
+    }
+
+    class Log {
+        -Long id
+        -Long userId
+        -String username
+        -String operation
+        -String method
+        -String params
+        -String ip
+        -Date createTime
+        -Long executeTime
+        +recordLog(log) void
+    }
+
+    class ProductCategory {
+        -Long id
+        -String name
+        -String code
+        -Integer sortOrder
+        -Boolean enabled
+        -Long parentId
+        -Date createTime
+        -Date updateTime
+        +getProducts() List~Product~
+        +setEnabled(enabled) void
+    }
+
+    class Product {
+        -Long id
+        -String name
+        -String shortDescription
+        -String fullDescription
+        -Long categoryId
+        -String coverImage
+        -String metaKeywords
+        -String metaDescription
+        -Boolean isPublished
+        -Date publishDate
+        -Date createTime
+        -Date updateTime
+        -Long creatorId
+        -Long updaterId
+        +publish() boolean
+        +unpublish() boolean
+        +getCategory() ProductCategory
+        +getMedia() List~Media~
+    }
+
+    class Solution {
+        -Long id
+        -String title
+        -String shortDescription
+        -String content
+        -String coverImage
+        -String metaKeywords
+        -String metaDescription
+        -Boolean isPublished
+        -Date publishDate
+        -Date createTime
+        -Date updateTime
+        -Long creatorId
+        -Long updaterId
+        +publish() boolean
+        +unpublish() boolean
+        +getMedia() List~Media~
+    }
+
+    class ArticleCategory {
+        -Long id
+        -String name
+        -String code
+        -Integer sortOrder
+        -Boolean enabled
+        -Long parentId
+        -Date createTime
+        -Date updateTime
+        +getArticles() List~Article~
+        +setEnabled(enabled) void
+    }
+
+    class Article {
+        -Long id
+        -String title
+        -String shortDescription
+        -String content
+        -Long categoryId
+        -String coverImage
+        -String metaKeywords
+        -String metaDescription
+        -Boolean isPublished
+        -Date publishDate
+        -Date createTime
+        -Date updateTime
+        -Long creatorId
+        -Long updaterId
+        +publish() boolean
+        +unpublish() boolean
+        +getCategory() ArticleCategory
+        +getMedia() List~Media~
+    }
+
+    class CaseCategory {
+        -Long id
+        -String name
+        -String code
+        -Integer sortOrder
+        -Boolean enabled
+        -Date createTime
+        -Date updateTime
+        +getCases() List~Case~
+        +setEnabled(enabled) void
+    }
+
+    class Case {
+        -Long id
+        -String title
+        -String shortDescription
+        -String content
+        -Long categoryId
+        -String coverImage
+        -String metaKeywords
+        -String metaDescription
+        -Boolean isPublished
+        -String clientName
+        -Date completeDate
+        -Date publishDate
+        -Date createTime
+        -Date updateTime
+        -Long creatorId
+        -Long updaterId
+        +publish() boolean
+        +unpublish() boolean
+        +getCategory() CaseCategory
+        +getMedia() List~Media~
+    }
+
+    class AboutContent {
+        -Long id
+        -String section
+        -String title
+        -String content
+        -Integer sortOrder
+        -Boolean isPublished
+        -Date createTime
+        -Date updateTime
+        -Long creatorId
+        -Long updaterId
+        +publish() boolean
+        +unpublish() boolean
+        +getMedia() List~Media~
+    }
+
+    class ContactInfo {
+        -Long id
+        -String type
+        -String value
+        -String description
+        -Integer sortOrder
+        -Boolean isPublished
+        -Date createTime
+        -Date updateTime
+        +publish() boolean
+        +unpublish() boolean
+    }
+
+    class ContactMessage {
+        -Long id
+        -String name
+        -String email
+        -String phone
+        -String subject
+        -String message
+        -String ipAddress
+        -Boolean isRead
+        -Date createTime
+        -Date readTime
+        -Long readerId
+        +markAsRead() boolean
+        +markAsUnread() boolean
+        +reply() boolean
+    }
+    
+    class AuthService {
+        +login(username, password) String
+        +refreshToken(refreshToken) String
+        +validateToken(token) boolean
+        +getUserFromToken(token) User
+    }
+
+    class ProductService {
+        +getProducts(criteria) Page~Product~
+        +getProduct(id) Product
+        +createProduct(product) Product
+        +updateProduct(id, product) Product
+        +deleteProduct(id) boolean
+        +publishProduct(id) boolean
+        +unpublishProduct(id) boolean
+        +getProductCategories() List~ProductCategory~
+        +createProductCategory(category) ProductCategory
+        +updateProductCategory(id, category) ProductCategory
+        +deleteProductCategory(id) boolean
+    }
+
+    class SolutionService {
+        +getSolutions(criteria) Page~Solution~
+        +getSolution(id) Solution
+        +createSolution(solution) Solution
+        +updateSolution(id, solution) Solution
+        +deleteSolution(id) boolean
+        +publishSolution(id) boolean
+        +unpublishSolution(id) boolean
+    }
+
+    class ArticleService {
+        +getArticles(criteria) Page~Article~
+        +getArticle(id) Article
+        +createArticle(article) Article
+        +updateArticle(id, article) Article
+        +deleteArticle(id) boolean
+        +publishArticle(id) boolean
+        +unpublishArticle(id) boolean
+        +getArticleCategories() List~ArticleCategory~
+        +createArticleCategory(category) ArticleCategory
+        +updateArticleCategory(id, category) ArticleCategory
+        +deleteArticleCategory(id) boolean
+    }
+
+    class CaseService {
+        +getCases(criteria) Page~Case~
+        +getCase(id) Case
+        +createCase(case) Case
+        +updateCase(id, case) Case
+        +deleteCase(id) boolean
+        +publishCase(id) boolean
+        +unpublishCase(id) boolean
+        +getCaseCategories() List~CaseCategory~
+        +createCaseCategory(category) CaseCategory
+        +updateCaseCategory(id, category) CaseCategory
+        +deleteCaseCategory(id) boolean
+    }
+
+    class AboutService {
+        +getAboutContents() List~AboutContent~
+        +getAboutContent(id) AboutContent
+        +createAboutContent(content) AboutContent
+        +updateAboutContent(id, content) AboutContent
+        +deleteAboutContent(id) boolean
+        +publishAboutContent(id) boolean
+        +unpublishAboutContent(id) boolean
+    }
+
+    class ContactService {
+        +getContactInfos() List~ContactInfo~
+        +getContactInfo(id) ContactInfo
+        +createContactInfo(info) ContactInfo
+        +updateContactInfo(id, info) ContactInfo
+        +deleteContactInfo(id) boolean
+        +publishContactInfo(id) boolean
+        +unpublishContactInfo(id) boolean
+        +getContactMessages(criteria) Page~ContactMessage~
+        +getContactMessage(id) ContactMessage
+        +createContactMessage(message) ContactMessage
+        +markMessageAsRead(id) boolean
+        +markMessageAsUnread(id) boolean
+        +deleteContactMessage(id) boolean
+    }
+
+    class MediaService {
+        +uploadMedia(file) Media
+        +getMedia(id) Media
+        +deleteMedia(id) boolean
+        +getMediaByIds(ids) List~Media~
+        +searchMedia(criteria) Page~Media~
+    }
+
+    User "1" -- "*" Role : has
+    Role "1" -- "*" Permission : has
+    User "1" -- "*" Log : generates
+    User "1" -- "*" Media : uploads
+    
+    ProductCategory "1" -- "*" Product : contains
+    Product "1" -- "*" Media : has
+    
+    ArticleCategory "1" -- "*" Article : contains
+    Article "1" -- "*" Media : has
+    
+    Solution "1" -- "*" Media : has
+    
+    CaseCategory "1" -- "*" Case : contains
+    Case "1" -- "*" Media : has
+    
+    AboutContent "1" -- "*" Media : has

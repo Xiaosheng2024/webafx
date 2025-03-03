@@ -1,0 +1,131 @@
+sequenceDiagram
+    participant Client as Vue Frontend
+    participant Auth as AuthController
+    participant Product as ProductController
+    participant Article as ArticleController
+    participant Case as CaseController
+    participant Solution as SolutionController
+    participant About as AboutController
+    participant Contact as ContactController
+    participant Media as MediaController
+    participant AuthS as AuthService
+    participant ProductS as ProductService
+    participant ArticleS as ArticleService
+    participant CaseS as CaseService
+    participant SolutionS as SolutionService
+    participant AboutS as AboutService
+    participant ContactS as ContactService
+    participant MediaS as MediaService
+    participant DB as Database (MyBatis)
+    
+    %% User Authentication Flow
+    Client->>Auth: POST /api/auth/login (credentials)
+    Auth->>AuthS: login(username, password)
+    AuthS->>DB: validateCredentials()
+    DB-->>AuthS: User details
+    AuthS-->>Auth: JWT Token
+    Auth-->>Client: Return JWT Token
+    
+    %% Product Management Flow
+    Client->>Product: GET /api/products (with filters)
+    Product->>ProductS: getProducts(criteria)
+    ProductS->>DB: selectProducts(criteria)
+    DB-->>ProductS: Product list
+    ProductS-->>Product: Processed product list
+    Product-->>Client: Return paginated products
+    
+    %% Create Product Flow
+    Client->>Product: POST /api/products (product data)
+    Product->>ProductS: createProduct(product)
+    ProductS->>DB: insertProduct(product)
+    DB-->>ProductS: Product ID
+    ProductS-->>Product: Created product
+    Product-->>Client: Return created product
+    
+    %% Media Upload Flow
+    Client->>Media: POST /api/media (file upload)
+    Media->>MediaS: uploadMedia(file)
+    MediaS->>DB: saveMediaMetadata(media)
+    DB-->>MediaS: Media ID
+    MediaS-->>Media: Media details
+    Media-->>Client: Return media details
+    
+    %% Article Management Flow
+    Client->>Article: GET /api/articles (with filters)
+    Article->>ArticleS: getArticles(criteria)
+    ArticleS->>DB: selectArticles(criteria)
+    DB-->>ArticleS: Article list
+    ArticleS-->>Article: Processed article list
+    Article-->>Client: Return paginated articles
+    
+    %% Create Article Flow
+    Client->>Article: POST /api/articles (article data)
+    Article->>ArticleS: createArticle(article)
+    ArticleS->>DB: insertArticle(article)
+    DB-->>ArticleS: Article ID
+    ArticleS-->>Article: Created article
+    Article-->>Client: Return created article
+    
+    %% Case Management Flow
+    Client->>Case: GET /api/cases (with filters)
+    Case->>CaseS: getCases(criteria)
+    CaseS->>DB: selectCases(criteria)
+    DB-->>CaseS: Case list
+    CaseS-->>Case: Processed case list
+    Case-->>Client: Return paginated cases
+    
+    %% Create Case Flow
+    Client->>Case: POST /api/cases (case data)
+    Case->>CaseS: createCase(case)
+    CaseS->>DB: insertCase(case)
+    DB-->>CaseS: Case ID
+    CaseS-->>Case: Created case
+    Case-->>Client: Return created case
+    
+    %% Solution Management Flow
+    Client->>Solution: GET /api/solutions (with filters)
+    Solution->>SolutionS: getSolutions(criteria)
+    SolutionS->>DB: selectSolutions(criteria)
+    DB-->>SolutionS: Solution list
+    SolutionS-->>Solution: Processed solution list
+    Solution-->>Client: Return paginated solutions
+    
+    %% Create Solution Flow
+    Client->>Solution: POST /api/solutions (solution data)
+    Solution->>SolutionS: createSolution(solution)
+    SolutionS->>DB: insertSolution(solution)
+    DB-->>SolutionS: Solution ID
+    SolutionS-->>Solution: Created solution
+    Solution-->>Client: Return created solution
+    
+    %% About Content Management Flow
+    Client->>About: GET /api/about-contents
+    About->>AboutS: getAboutContents()
+    AboutS->>DB: selectAboutContents()
+    DB-->>AboutS: About content list
+    AboutS-->>About: Processed about content list
+    About-->>Client: Return about contents
+    
+    %% Update About Content Flow
+    Client->>About: PUT /api/about-contents/{id} (content data)
+    About->>AboutS: updateAboutContent(id, content)
+    AboutS->>DB: updateAboutContent(content)
+    DB-->>AboutS: Update status
+    AboutS-->>About: Updated about content
+    About-->>Client: Return updated about content
+    
+    %% Contact Info Management Flow
+    Client->>Contact: GET /api/contact-infos
+    Contact->>ContactS: getContactInfos()
+    ContactS->>DB: selectContactInfos()
+    DB-->>ContactS: Contact info list
+    ContactS-->>Contact: Processed contact info list
+    Contact-->>Client: Return contact infos
+    
+    %% Contact Message Management Flow
+    Client->>Contact: POST /api/contact-messages (message data)
+    Contact->>ContactS: createContactMessage(message)
+    ContactS->>DB: insertContactMessage(message)
+    DB-->>ContactS: Message ID
+    ContactS-->>Contact: Created message
+    Contact-->>Client: Return success

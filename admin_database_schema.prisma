@@ -1,0 +1,333 @@
+// This is the Prisma schema file for the Enterprise Website & E-commerce Admin Panel
+// Based on the system architecture and requirements in PRD and System Design documents
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- User Management ----------
+model User {
+  id              String          @id @default(uuid())
+  email           String          @unique
+  name            String
+  password        String
+  role            UserRole        @default(USER)
+  active          Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  profileImage    String?
+  lastLoginAt     DateTime?
+  inquiries       Inquiry[]
+  articles        Article[]
+  caseStudies     CaseStudy[]
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  USER
+}
+
+// ---------- Product Management ----------
+model ProductCategory {
+  id          String        @id @default(uuid())
+  name        String
+  slug        String        @unique
+  description String?       @db.Text
+  imageUrl    String?
+  parentId    String?
+  parent      ProductCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    ProductCategory[] @relation("CategoryHierarchy")
+  products    Product[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  active      Boolean       @default(true)
+}
+
+model Product {
+  id                String            @id @default(uuid())
+  name              String
+  slug              String            @unique
+  description       String?           @db.Text
+  categoryId        String
+  category          ProductCategory   @relation(fields: [categoryId], references: [id])
+  price             Float?
+  sku               String?           @unique
+  stockQuantity     Int?
+  isPublished       Boolean           @default(false)
+  publishDate       DateTime?
+  featuredImageUrl  String?
+  galleryImages     ProductImage[]
+  productAttributes ProductAttribute[]
+  productDocuments  ProductDocument[]
+  productVideos     ProductVideo[]
+  specifications    Specification[]
+  relatedProducts   ProductRelation[] @relation("ProductToRelated")
+  relatedToProducts ProductRelation[] @relation("RelatedToProduct")
+  relatedArticles   ProductArticleRelation[]
+  relatedCases      ProductCaseRelation[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  tags              TagsOnProducts[]
+}
+
+model ProductImage {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  imageUrl    String
+  altText     String?
+  displayOrder Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ProductVideo {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  videoUrl    String
+  thumbnail   String?
+  title       String?
+  displayOrder Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ProductDocument {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  documentUrl String
+  title       String
+  fileType    String?
+  fileSize    Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ProductAttribute {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name        String
+  value       String
+  displayOrder Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([productId, name])
+}
+
+model Specification {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  group       String?
+  name        String
+  value       String
+  unit        String?
+  displayOrder Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([productId, name])
+}
+
+model ProductRelation {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation("ProductToRelated", fields: [productId], references: [id], onDelete: Cascade)
+  relatedProductId String
+  relatedProduct Product  @relation("RelatedToProduct", fields: [relatedProductId], references: [id], onDelete: Cascade)
+  relationType String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([productId, relatedProductId])
+}
+
+// ---------- Content Management ----------
+model ArticleCategory {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  imageUrl    String?
+  parentId    String?
+  parent      ArticleCategory? @relation("ArticleCategoryHierarchy", fields: [parentId], references: [id])
+  children    ArticleCategory[] @relation("ArticleCategoryHierarchy")
+  articles    Article[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  active      Boolean   @default(true)
+}
+
+model Article {
+  id              String    @id @default(uuid())
+  title           String
+  slug            String    @unique
+  content         String    @db.LongText
+  excerpt         String?   @db.Text
+  categoryId      String
+  category        ArticleCategory @relation(fields: [categoryId], references: [id])
+  authorId        String
+  author          User      @relation(fields: [authorId], references: [id])
+  featuredImageUrl String?
+  isPublished     Boolean   @default(false)
+  publishDate     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  relatedProducts ProductArticleRelation[]
+  tags            TagsOnArticles[]
+}
+
+model CaseStudy {
+  id              String    @id @default(uuid())
+  title           String
+  slug            String    @unique
+  content         String    @db.LongText
+  excerpt         String?   @db.Text
+  clientName      String?
+  industry        String?
+  challengeDesc   String?   @db.Text
+  solutionDesc    String?   @db.Text
+  resultDesc      String?   @db.Text
+  authorId        String
+  author          User      @relation(fields: [authorId], references: [id])
+  featuredImageUrl String?
+  isPublished     Boolean   @default(false)
+  publishDate     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  relatedProducts ProductCaseRelation[]
+  tags            TagsOnCases[]
+}
+
+model ProductArticleRelation {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  articleId   String
+  article     Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([productId, articleId])
+}
+
+model ProductCaseRelation {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  caseId      String
+  caseStudy   CaseStudy @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([productId, caseId])
+}
+
+// ---------- Tag System ----------
+model Tag {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  slug        String           @unique
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  products    TagsOnProducts[]
+  articles    TagsOnArticles[]
+  cases       TagsOnCases[]
+}
+
+model TagsOnProducts {
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tagId       String
+  tag         Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  assignedAt  DateTime @default(now())
+
+  @@id([productId, tagId])
+}
+
+model TagsOnArticles {
+  articleId   String
+  article     Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tagId       String
+  tag         Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  assignedAt  DateTime @default(now())
+
+  @@id([articleId, tagId])
+}
+
+model TagsOnCases {
+  caseId      String
+  caseStudy   CaseStudy @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  tagId       String
+  tag         Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  assignedAt  DateTime  @default(now())
+
+  @@id([caseId, tagId])
+}
+
+// ---------- Inquiry System ----------
+model Inquiry {
+  id              String         @id @default(uuid())
+  name            String
+  email           String
+  phone           String?
+  company         String?
+  message         String         @db.Text
+  productId       String?
+  source          String?        // website, social media, referral, etc.
+  status          InquiryStatus  @default(NEW)
+  priority        InquiryPriority @default(MEDIUM)
+  responseMessage String?        @db.Text
+  responderId     String?
+  responder       User?          @relation(fields: [responderId], references: [id])
+  responseDate    DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+enum InquiryStatus {
+  NEW
+  IN_PROGRESS
+  RESPONDED
+  CLOSED
+}
+
+enum InquiryPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ---------- Settings Management ----------
+model SiteSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String   @db.Text
+  group       String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AdminActivity {
+  id          String   @id @default(uuid())
+  action      String
+  entityType  String
+  entityId    String
+  userId      String
+  details     String?  @db.Text
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+}

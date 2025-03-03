@@ -1,0 +1,330 @@
+classDiagram
+    class User {
+        +id: int
+        +username: string
+        +email: string
+        +password_hash: string
+        +role_id: int
+        +last_login: datetime
+        +created_at: datetime
+        +updated_at: datetime
+        +is_active: boolean
+        +authenticate(password: string): boolean
+        +hasPermission(permission: string): boolean
+    }
+    
+    class Role {
+        +id: int
+        +name: string
+        +description: string
+        +created_at: datetime
+        +updated_at: datetime
+        +getPermissions(): Permission[]
+    }
+    
+    class Permission {
+        +id: int
+        +name: string
+        +code: string
+        +description: string
+        +created_at: datetime
+        +updated_at: datetime
+    }
+    
+    class RolePermission {
+        +role_id: int
+        +permission_id: int
+    }
+    
+    class Product {
+        +id: int
+        +name: string
+        +slug: string
+        +model_number: string
+        +sku: string
+        +description: text
+        +short_description: text
+        +featured: boolean
+        +status: enum
+        +product_type_id: int
+        +created_at: datetime
+        +updated_at: datetime
+        +created_by: int
+        +updated_by: int
+        +getImages(): ProductImage[]
+        +getAttributes(): ProductAttribute[]
+        +getRelatedProducts(): Product[]
+        +getRelatedArticles(): Article[]
+        +getRelatedCases(): Case[]
+    }
+    
+    class ProductType {
+        +id: int
+        +name: string
+        +description: text
+        +created_at: datetime
+        +updated_at: datetime
+    }
+    
+    class ProductCategory {
+        +id: int
+        +name: string
+        +slug: string
+        +description: text
+        +parent_id: int
+        +order: int
+        +created_at: datetime
+        +updated_at: datetime
+        +getProducts(): Product[]
+        +getSubcategories(): ProductCategory[]
+    }
+    
+    class ProductCategoryRelation {
+        +product_id: int
+        +category_id: int
+    }
+    
+    class AttributeDefinition {
+        +id: int
+        +name: string
+        +code: string
+        +description: text
+        +data_type: enum
+        +input_type: enum
+        +is_required: boolean
+        +is_filterable: boolean
+        +is_comparable: boolean
+        +display_order: int
+        +created_at: datetime
+        +updated_at: datetime
+    }
+    
+    class ProductTypeAttributeDefinition {
+        +product_type_id: int
+        +attribute_definition_id: int
+        +is_required: boolean
+        +display_order: int
+    }
+    
+    class ProductAttribute {
+        +id: int
+        +product_id: int
+        +attribute_definition_id: int
+        +value: text
+        +created_at: datetime
+        +updated_at: datetime
+    }
+    
+    class ProductImage {
+        +id: int
+        +product_id: int
+        +media_id: int
+        +alt_text: string
+        +is_primary: boolean
+        +display_order: int
+        +created_at: datetime
+        +updated_at: datetime
+    }
+    
+    class Media {
+        +id: int
+        +file_name: string
+        +file_path: string
+        +file_type: string
+        +file_size: int
+        +mime_type: string
+        +alt_text: string
+        +title: string
+        +description: text
+        +created_at: datetime
+        +updated_at: datetime
+        +created_by: int
+    }
+    
+    class Article {
+        +id: int
+        +title: string
+        +slug: string
+        +content: text
+        +summary: text
+        +featured_image_id: int
+        +status: enum
+        +publish_date: datetime
+        +author_id: int
+        +created_at: datetime
+        +updated_at: datetime
+        +created_by: int
+        +updated_by: int
+        +getCategories(): ArticleCategory[]
+        +getTags(): Tag[]
+        +getRelatedProducts(): Product[]
+    }
+    
+    class ArticleCategory {
+        +id: int
+        +name: string
+        +slug: string
+        +description: text
+        +parent_id: int
+        +order: int
+        +created_at: datetime
+        +updated_at: datetime
+    }
+    
+    class ArticleCategoryRelation {
+        +article_id: int
+        +category_id: int
+    }
+    
+    class Case {
+        +id: int
+        +title: string
+        +slug: string
+        +content: text
+        +summary: text
+        +featured_image_id: int
+        +client_name: string
+        +industry: string
+        +challenge: text
+        +solution: text
+        +result: text
+        +status: enum
+        +publish_date: datetime
+        +created_at: datetime
+        +updated_at: datetime
+        +created_by: int
+        +updated_by: int
+        +getRelatedProducts(): Product[]
+    }
+    
+    class Tag {
+        +id: int
+        +name: string
+        +slug: string
+        +created_at: datetime
+        +updated_at: datetime
+    }
+    
+    class ArticleTag {
+        +article_id: int
+        +tag_id: int
+    }
+    
+    class ProductTag {
+        +product_id: int
+        +tag_id: int
+    }
+    
+    class ProductRelation {
+        +product_id: int
+        +related_product_id: int
+        +relation_type: enum
+    }
+    
+    class ProductArticleRelation {
+        +product_id: int
+        +article_id: int
+    }
+    
+    class ProductCaseRelation {
+        +product_id: int
+        +case_id: int
+    }
+    
+    class Inquiry {
+        +id: int
+        +name: string
+        +email: string
+        +phone: string
+        +company: string
+        +subject: string
+        +message: text
+        +product_id: int
+        +status: enum
+        +created_at: datetime
+        +updated_at: datetime
+        +assigned_to: int
+        +getResponses(): InquiryResponse[]
+    }
+    
+    class InquiryResponse {
+        +id: int
+        +inquiry_id: int
+        +response: text
+        +created_at: datetime
+        +created_by: int
+    }
+    
+    class SeoSettings {
+        +id: int
+        +entity_type: string
+        +entity_id: int
+        +meta_title: string
+        +meta_description: string
+        +meta_keywords: string
+        +canonical_url: string
+        +created_at: datetime
+        +updated_at: datetime
+        +updated_by: int
+    }
+    
+    class SystemConfig {
+        +id: int
+        +config_key: string
+        +config_value: text
+        +config_group: string
+        +is_system: boolean
+        +created_at: datetime
+        +updated_at: datetime
+        +updated_by: int
+    }
+    
+    class AdminActivity {
+        +id: int
+        +user_id: int
+        +action: string
+        +entity_type: string
+        +entity_id: int
+        +details: text
+        +ip_address: string
+        +user_agent: string
+        +created_at: datetime
+    }
+    
+    User "1" -- "1" Role : has
+    Role "1" -- "*" RolePermission : has
+    Permission "1" -- "*" RolePermission : has
+    Product "*" -- "1" ProductType : has
+    Product "*" -- "*" ProductCategory : through
+    ProductCategoryRelation -- Product
+    ProductCategoryRelation -- ProductCategory
+    ProductType "1" -- "*" ProductTypeAttributeDefinition : has
+    AttributeDefinition "1" -- "*" ProductTypeAttributeDefinition : has
+    Product "1" -- "*" ProductAttribute : has
+    ProductAttribute -- AttributeDefinition
+    Product "1" -- "*" ProductImage : has
+    ProductImage -- Media
+    Article "*" -- "*" ArticleCategory : through
+    ArticleCategoryRelation -- Article
+    ArticleCategoryRelation -- ArticleCategory
+    Article "*" -- "*" Tag : through
+    ArticleTag -- Article
+    ArticleTag -- Tag
+    Product "*" -- "*" Tag : through
+    ProductTag -- Product
+    ProductTag -- Tag
+    Product "*" -- "*" Product : through
+    ProductRelation -- Product
+    Product "*" -- "*" Article : through
+    ProductArticleRelation -- Product
+    ProductArticleRelation -- Article
+    Product "*" -- "*" Case : through
+    ProductCaseRelation -- Product
+    ProductCaseRelation -- Case
+    Inquiry "1" -- "*" InquiryResponse : has
+    Inquiry -- Product
+    InquiryResponse -- User : created by
+    Article -- User : author
+    Article -- Media : featured image
+    Case -- Media : featured image
+    User "1" -- "*" AdminActivity : performs

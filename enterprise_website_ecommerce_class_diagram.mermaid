@@ -1,0 +1,395 @@
+classDiagram
+    %% Core System Classes
+    class System {
+        <<facade>>
+        +initialize()
+        +getConfig(key: string): any
+        +setConfig(key: string, value: any): void
+    }
+    
+    %% User Related Classes
+    class User {
+        +userId: string
+        +username: string
+        +email: string
+        +phone: string
+        +role: UserRole
+        +createdAt: Date
+        +lastLogin: Date
+        +authenticate(password: string): boolean
+        +hasPermission(permission: string): boolean
+    }
+    
+    class UserRole {
+        +roleId: string
+        +name: string
+        +permissions: string[]
+        +description: string
+        +canAccess(module: string): boolean
+    }
+    
+    class AdminUser {
+        +department: string
+        +managedCategories: string[]
+        +canManageProduct(productId: string): boolean
+        +canManageContent(contentId: string): boolean
+    }
+    
+    %% Product Related Classes
+    class Product {
+        +productId: string
+        +name: string
+        +model: string
+        +sku: string
+        +description: string
+        +shortDescription: string
+        +categoryIds: string[]
+        +tagIds: string[]
+        +attributes: ProductAttribute[]
+        +mediaItems: MediaItem[]
+        +relatedProductIds: string[]
+        +relatedContentIds: string[]
+        +seoMetadata: SEOMetadata
+        +status: ProductStatus
+        +createdAt: Date
+        +updatedAt: Date
+        +createdBy: string
+        +updatedBy: string
+        +getAttributeValue(name: string): any
+        +addAttribute(name: string, value: any): void
+        +addMediaItem(mediaItem: MediaItem): void
+        +removeMediaItem(mediaItemId: string): void
+        +publish(): void
+        +unpublish(): void
+        +clone(): Product
+    }
+    
+    class ProductCategory {
+        +categoryId: string
+        +name: string
+        +slug: string
+        +description: string
+        +parentCategoryId: string
+        +imageUrl: string
+        +level: number
+        +sortOrder: number
+        +isActive: boolean
+        +seoMetadata: SEOMetadata
+        +attributeSchema: AttributeSchema[]
+        +getFullPath(): string
+        +getBreadcrumbs(): ProductCategory[]
+    }
+    
+    class ProductAttribute {
+        +attributeId: string
+        +name: string
+        +value: any
+        +unit: string
+        +isFilterable: boolean
+        +isComparable: boolean
+        +isSpecification: boolean
+        +displayOrder: number
+    }
+    
+    class AttributeSchema {
+        +schemaId: string
+        +name: string
+        +dataType: string
+        +isRequired: boolean
+        +defaultValue: any
+        +possibleValues: string[]
+        +validationRules: string
+    }
+    
+    class MediaItem {
+        +mediaId: string
+        +title: string
+        +type: MediaType
+        +url: string
+        +thumbnailUrl: string
+        +size: number
+        +mimeType: string
+        +width: number
+        +height: number
+        +duration: number
+        +sortOrder: number
+        +isMain: boolean
+        +alt: string
+    }
+    
+    enum MediaType {
+        IMAGE
+        VIDEO
+        DOCUMENT
+        MODEL_3D
+    }
+    
+    enum ProductStatus {
+        DRAFT
+        PUBLISHED
+        ARCHIVED
+    }
+    
+    %% Content Related Classes
+    class Content {
+        +contentId: string
+        +title: string
+        +slug: string
+        +type: ContentType
+        +body: string
+        +excerpt: string
+        +authorId: string
+        +authorName: string
+        +publishDate: Date
+        +categoryIds: string[]
+        +tagIds: string[]
+        +featuredMedia: MediaItem
+        +mediaItems: MediaItem[]
+        +relatedProductIds: string[]
+        +relatedContentIds: string[]
+        +seoMetadata: SEOMetadata
+        +status: ContentStatus
+        +viewCount: number
+        +createdAt: Date
+        +updatedAt: Date
+        +createdBy: string
+        +updatedBy: string
+        +publish(): void
+        +unpublish(): void
+        +incrementViewCount(): void
+    }
+    
+    class ContentCategory {
+        +categoryId: string
+        +name: string
+        +slug: string
+        +description: string
+        +parentCategoryId: string
+        +imageUrl: string
+        +isActive: boolean
+        +seoMetadata: SEOMetadata
+        +contentTypes: ContentType[]
+        +getFullPath(): string
+    }
+    
+    class Tag {
+        +tagId: string
+        +name: string
+        +slug: string
+        +type: string
+        +count: number
+        +incrementCount(): void
+    }
+    
+    enum ContentType {
+        ARTICLE
+        NEWS
+        CASE_STUDY
+        TECHNICAL_DOC
+        FAQ
+        PAGE
+    }
+    
+    enum ContentStatus {
+        DRAFT
+        PUBLISHED
+        ARCHIVED
+    }
+    
+    class SEOMetadata {
+        +title: string
+        +description: string
+        +keywords: string[]
+        +canonicalUrl: string
+        +ogTitle: string
+        +ogDescription: string
+        +ogImage: string
+    }
+    
+    %% Inquiry Related Classes
+    class Inquiry {
+        +inquiryId: string
+        +type: InquiryType
+        +subject: string
+        +message: string
+        +customerName: string
+        +customerEmail: string
+        +customerPhone: string
+        +customerCompany: string
+        +relatedProductId: string
+        +status: InquiryStatus
+        +priority: InquiryPriority
+        +assignedUserId: string
+        +createdAt: Date
+        +updatedAt: Date
+        +responseMessage: string
+        +respondedBy: string
+        +respondedAt: Date
+        +isRead: boolean
+        +markAsRead(): void
+        +respond(message: string, userId: string): void
+        +assignTo(userId: string): void
+        +escalate(): void
+    }
+    
+    enum InquiryType {
+        PRODUCT_INQUIRY
+        PRICE_REQUEST
+        TECHNICAL_SUPPORT
+        GENERAL_QUESTION
+        FEEDBACK
+        COMPLAINT
+        PARTNERSHIP
+    }
+    
+    enum InquiryStatus {
+        OPEN
+        IN_PROGRESS
+        RESPONDED
+        CLOSED
+        ESCALATED
+    }
+    
+    enum InquiryPriority {
+        LOW
+        MEDIUM
+        HIGH
+        URGENT
+    }
+    
+    %% Search Related Classes
+    class SearchService {
+        +search(query: string, filters: SearchFilter[], page: number, pageSize: number): SearchResult
+        +suggest(query: string, limit: number): string[]
+        +indexProduct(product: Product): void
+        +indexContent(content: Content): void
+        +removeFromIndex(id: string): void
+    }
+    
+    class SearchFilter {
+        +field: string
+        +operator: string
+        +value: any
+        +toQueryString(): string
+    }
+    
+    class SearchResult {
+        +totalCount: number
+        +page: number
+        +pageSize: number
+        +totalPages: number
+        +items: any[]
+        +facets: Map~string, any~
+        +executionTimeMs: number
+    }
+    
+    %% Analytics Classes
+    class AnalyticsService {
+        +trackPageView(url: string, userId: string, metadata: object): void
+        +trackEvent(eventName: string, userId: string, metadata: object): void
+        +getPopularProducts(limit: number): Product[]
+        +getPopularContent(limit: number): Content[]
+        +getUserJourney(userId: string): any[]
+    }
+    
+    class UserActivityLog {
+        +logId: string
+        +userId: string
+        +sessionId: string
+        +ipAddress: string
+        +userAgent: string
+        +activityType: string
+        +objectId: string
+        +objectType: string
+        +timestamp: Date
+        +metadata: object
+    }
+    
+    %% Cache Related Classes
+    class CacheService {
+        +get(key: string): any
+        +set(key: string, value: any, ttl: number): void
+        +delete(key: string): void
+        +flush(): void
+    }
+    
+    %% Notification Classes
+    class NotificationService {
+        +sendInquiryNotification(inquiry: Inquiry): void
+        +sendEmailNotification(to: string, subject: string, body: string): void
+        +sendSmsNotification(to: string, message: string): void
+    }
+    
+    %% Configuration Classes
+    class SiteConfig {
+        +configId: string
+        +name: string
+        +value: any
+        +group: string
+        +isSystem: boolean
+        +updatedBy: string
+        +updatedAt: Date
+    }
+    
+    %% Chat Related Classes
+    class ChatService {
+        +initializeChat(): Chat
+        +getChat(chatId: string): Chat
+        +assignOperator(chatId: string, operatorId: string): void
+        +closeChat(chatId: string): void
+    }
+    
+    class Chat {
+        +chatId: string
+        +customerId: string
+        +customerName: string
+        +operatorId: string
+        +status: ChatStatus
+        +startTime: Date
+        +endTime: Date
+        +messages: ChatMessage[]
+        +addMessage(sender: string, content: string): void
+        +transferToOperator(newOperatorId: string): void
+        +end(): void
+    }
+    
+    class ChatMessage {
+        +messageId: string
+        +chatId: string
+        +sender: string
+        +content: string
+        +timestamp: Date
+        +isRead: boolean
+        +attachments: string[]
+        +markAsRead(): void
+    }
+    
+    enum ChatStatus {
+        ACTIVE
+        WAITING
+        TRANSFERRED
+        CLOSED
+    }
+    
+    %% Relationships
+    User <|-- AdminUser
+    User "1" -- "1" UserRole
+    Product "*" -- "*" ProductCategory
+    Product "1" -- "*" ProductAttribute
+    ProductCategory "1" -- "*" AttributeSchema
+    Product "1" -- "*" MediaItem
+    Content "1" -- "*" MediaItem
+    Content "*" -- "*" ContentCategory
+    Product "*" -- "*" Tag
+    Content "*" -- "*" Tag
+    Product "1" -- "1" SEOMetadata
+    ProductCategory "1" -- "1" SEOMetadata
+    Content "1" -- "1" SEOMetadata
+    ContentCategory "1" -- "1" SEOMetadata
+    Inquiry "1" -- "0..1" Product
+    SearchService -- SearchResult
+    SearchService -- SearchFilter
+    ChatService "1" -- "*" Chat
+    Chat "1" -- "*" ChatMessage
+    User "1" -- "*" UserActivityLog
+    Content "*" -- "*" Product

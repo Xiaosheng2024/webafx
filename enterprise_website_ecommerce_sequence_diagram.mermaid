@@ -1,0 +1,165 @@
+sequenceDiagram
+    %% Define participants
+    participant User as User/Browser
+    participant FE as Frontend (Next.js)
+    participant API as API Gateway
+    participant Auth as Auth Service
+    participant Prod as Product Service
+    participant Cont as Content Service
+    participant Search as Search Service
+    participant Inq as Inquiry Service
+    participant Cache as Cache Service
+    participant DB as Database
+    participant ES as Elasticsearch
+    participant Store as File Storage
+    participant Admin as Admin User
+    participant CMS as CMS (Strapi)
+    
+    %% Flow 1: User product browsing and filtering
+    Note over User,DB: Product Browsing & Filtering Flow
+    User->>+FE: Visit product category page
+    FE->>+Cache: Check if category data in cache
+    Cache-->>-FE: Return cached data (if exists)
+    alt Cache Miss
+        FE->>+API: Request category products
+        API->>+Prod: getProductsByCategory(categoryId, filters)
+        Prod->>+DB: Query products with filters
+        DB-->>-Prod: Return product data
+        Prod-->>-API: Return formatted products
+        API-->>-FE: Return product listing data
+        FE->>Cache: Store in cache (short TTL)
+    end
+    FE-->>-User: Render product category page
+    User->>+FE: Apply product filters
+    FE->>+API: Request filtered products
+    API->>+Search: searchProducts(filters)
+    Search->>+ES: Execute filtered search query
+    ES-->>-Search: Return matching products
+    Search-->>-API: Return search results
+    API-->>-FE: Return filtered product data
+    FE-->>-User: Update product listing
+    
+    %% Flow 2: Product detail view with related content
+    Note over User,DB: Product Detail View Flow
+    User->>+FE: Click on product
+    FE->>+Cache: Check if product detail in cache
+    Cache-->>-FE: Return cached data (if exists)
+    alt Cache Miss
+        FE->>+API: getProductDetail(productId)
+        API->>+Prod: getProduct(productId)
+        Prod->>+DB: Query product and attributes
+        DB-->>-Prod: Return product data
+        Prod->>+Cont: getRelatedContent(productId)
+        Cont->>+DB: Query related content
+        DB-->>-Cont: Return related content
+        Cont-->>-Prod: Return related content
+        Prod-->>-API: Return product with related content
+        API-->>-FE: Return complete product data
+        FE->>Cache: Store in cache (medium TTL)
+    end
+    FE->>+API: Log product view
+    API->>DB: Record view statistics
+    API-->>-FE: Confirm logged
+    FE-->>-User: Display product detail page
+    
+    %% Flow 3: User inquiry/consultation
+    Note over User,Inq: Customer Inquiry Submission Flow
+    User->>+FE: Fill inquiry form for product
+    FE->>FE: Validate form input
+    User->>+FE: Submit inquiry
+    FE->>+API: createInquiry(inquiryData)
+    API->>+Inq: processInquiry(inquiryData)
+    Inq->>+DB: Save inquiry data
+    DB-->>-Inq: Confirm saved
+    Inq->>+Inq: sendNotifications()
+    Inq-->>-Inq: Notifications sent
+    Inq-->>-API: Return success status
+    API-->>-FE: Return confirmation
+    FE-->>-User: Show success message
+    
+    %% Flow 4: Live chat initiation
+    Note over User,DB: Live Chat Flow
+    User->>+FE: Click "Start Chat"
+    FE->>+API: initializeChat(userId, metadata)
+    API->>+Inq: createChatSession()
+    Inq->>+DB: Save chat session
+    DB-->>-Inq: Return session ID
+    Inq-->>-API: Return chat session data
+    API-->>-FE: Return chat initialization data
+    FE-->>-User: Display chat window
+    User->>+FE: Send message
+    FE->>+API: sendChatMessage(sessionId, message)
+    API->>+Inq: processMessage(sessionId, message)
+    Inq->>+DB: Save message
+    DB-->>-Inq: Confirm saved
+    Inq-->>-API: Return message status
+    API-->>-FE: Confirm message sent
+    FE-->>-User: Show message in chat
+    
+    %% Flow 5: Search functionality
+    Note over User,ES: Search Functionality Flow
+    User->>+FE: Enter search query
+    FE->>+API: search(query, filters)
+    API->>+Search: performSearch(query, filters)
+    Search->>+ES: Execute search query
+    ES-->>-Search: Return search results
+    Search->>Search: Format results
+    Search-->>-API: Return search data
+    API-->>-FE: Return search results
+    FE-->>-User: Display search results page
+    
+    %% Flow 6: Admin product management
+    Note over Admin,DB: Admin Product Management Flow
+    Admin->>+CMS: Login to admin panel
+    CMS->>+Auth: authenticate(credentials)
+    Auth->>+DB: Verify credentials
+    DB-->>-Auth: Return user data
+    Auth-->>-CMS: Return authentication result
+    CMS-->>-Admin: Display admin dashboard
+    Admin->>+CMS: Create new product
+    CMS->>+Prod: createProduct(productData)
+    Prod->>+DB: Insert product data
+    DB-->>-Prod: Return new product ID
+    Prod->>+Store: Upload product images
+    Store-->>-Prod: Return image URLs
+    Prod->>+DB: Update product with image URLs
+    DB-->>-Prod: Confirm update
+    Prod->>+Search: indexProduct(product)
+    Search->>+ES: Index product data
+    ES-->>-Search: Confirm indexed
+    Search-->>-Prod: Indexing complete
+    Prod-->>-CMS: Return created product
+    CMS-->>-Admin: Show success message
+    
+    %% Flow 7: Content article creation and linking to products
+    Note over Admin,ES: Content Creation Flow
+    Admin->>+CMS: Create new article
+    CMS->>+Cont: createContent(contentData)
+    Cont->>+DB: Insert content data
+    DB-->>-Cont: Return content ID
+    Cont-->>-CMS: Return created content
+    Admin->>+CMS: Link article to products
+    CMS->>+Cont: linkContentToProducts(contentId, productIds)
+    Cont->>+DB: Update content-product relations
+    DB-->>-Cont: Confirm update
+    Cont->>+Search: indexContent(content)
+    Search->>+ES: Index content data
+    ES-->>-Search: Confirm indexed
+    Search-->>-Cont: Indexing complete
+    Cont-->>-CMS: Return updated content
+    CMS-->>-Admin: Show success message
+    
+    %% Flow 8: Cache invalidation after content update
+    Note over Admin,Cache: Cache Invalidation Flow
+    Admin->>+CMS: Update product info
+    CMS->>+Prod: updateProduct(productId, updates)
+    Prod->>+DB: Update product data
+    DB-->>-Prod: Confirm update
+    Prod->>+Cache: invalidateProductCache(productId)
+    Cache-->>-Prod: Cache invalidated
+    Prod->>+Search: updateProductIndex(productId)
+    Search->>+ES: Update product in index
+    ES-->>-Search: Confirm update
+    Search-->>-Prod: Index updated
+    Prod-->>-CMS: Return updated product
+    CMS-->>-Admin: Show success message

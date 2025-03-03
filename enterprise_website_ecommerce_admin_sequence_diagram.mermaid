@@ -1,0 +1,112 @@
+sequenceDiagram
+    participant Client as Admin Browser
+    participant FE as Frontend (Next.js)
+    participant Auth as Auth Middleware
+    participant API as Admin API
+    participant DB as Database
+    participant Cache as Redis Cache
+    participant Storage as File Storage
+    
+    %% Admin Authentication Flow
+    Note over Client,Storage: Admin Authentication Flow
+    Client->>FE: Access /admin route
+    FE->>Auth: Check authentication
+    Auth->>API: Verify token
+    API->>DB: Query user & permissions
+    DB-->>API: Return user data
+    alt Not authenticated
+        API-->>Auth: Invalid token
+        Auth-->>FE: Redirect to login
+        FE-->>Client: Display login page
+        Client->>FE: Submit login credentials
+        FE->>API: Login request
+        API->>DB: Verify credentials
+        DB-->>API: User verification result
+        API-->>FE: Set JWT cookie & user data
+        FE-->>Client: Redirect to dashboard
+    else Authenticated
+        API-->>Auth: Valid token
+        Auth-->>FE: Allow access
+        FE->>API: Load dashboard data
+        API->>DB: Query dashboard metrics
+        DB-->>API: Return metrics
+        API-->>FE: Dashboard data
+        FE-->>Client: Display admin dashboard
+    end
+    
+    %% Product Management Flow
+    Note over Client,Storage: Product Management Flow
+    Client->>FE: Navigate to Products
+    FE->>API: Request product list
+    API->>Cache: Check cached product list
+    alt Cache hit
+        Cache-->>API: Return cached data
+    else Cache miss
+        API->>DB: Query products with filters
+        DB-->>API: Return product data
+        API->>Cache: Store in cache
+    end
+    API-->>FE: Product list data
+    FE-->>Client: Display product list
+    
+    %% Product Creation Flow
+    Client->>FE: Create new product
+    FE->>API: Submit product data
+    API->>Auth: Check permission
+    Auth-->>API: Permission granted
+    API->>DB: Begin transaction
+    API->>Storage: Upload product images
+    Storage-->>API: Image URLs
+    API->>DB: Create product record
+    API->>DB: Add product attributes
+    API->>DB: Add product categories
+    API->>DB: Commit transaction
+    API->>Cache: Invalidate product cache
+    API-->>FE: Product created success
+    FE-->>Client: Show success & redirect
+    
+    %% Content Management Flow
+    Note over Client,Storage: Content Management Flow
+    Client->>FE: Navigate to Articles
+    FE->>API: Request article list
+    API->>DB: Query articles
+    DB-->>API: Return article data
+    API-->>FE: Article list
+    FE-->>Client: Display article list
+    
+    %% Article Creation with Product Association
+    Client->>FE: Create new article
+    FE->>API: Load available products
+    API->>DB: Query products for selection
+    DB-->>API: Product selection data
+    API-->>FE: Product options
+    FE-->>Client: Show article form with product selector
+    Client->>FE: Submit article with associated products
+    FE->>API: Create article request
+    API->>Storage: Upload article images
+    Storage-->>API: Image URLs
+    API->>DB: Begin transaction
+    API->>DB: Create article record
+    API->>DB: Create product-article relations
+    API->>DB: Create article categories
+    API->>DB: Create article tags
+    API->>DB: Commit transaction
+    API-->>FE: Article created success
+    FE-->>Client: Show success & redirect
+    
+    %% Inquiry Management Flow
+    Note over Client,Storage: Inquiry Management Flow
+    Client->>FE: Navigate to Inquiries
+    FE->>API: Request inquiries list
+    API->>DB: Query customer inquiries
+    DB-->>API: Return inquiries data
+    API-->>FE: Inquiries list
+    FE-->>Client: Display inquiries
+    
+    Client->>FE: Respond to inquiry
+    FE->>API: Submit inquiry response
+    API->>DB: Create inquiry response record
+    API->>DB: Update inquiry status
+    DB-->>API: Response saved
+    API-->>FE: Response success
+    FE-->>Client: Show success message
